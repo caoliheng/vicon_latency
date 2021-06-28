@@ -21,6 +21,8 @@ class FootSliderController:
         if with_sliders:
             self.slider_positions = head.get_sensor('slider_positions')
 
+        self.t = time.time()
+
     def warmup(self, thread_head):
         self.zero_pos = self.joint_positions.copy()
 
@@ -50,19 +52,27 @@ class FootSliderController:
         return sliders_out
 
     def run(self, thread_head):
-        def get_vicon(name):
-            pos, vel = thread_head.vicon.get_state(name + '/' + name)
+        def get_vicon(name1, name2=None):
+            if name2 is None:
+                name2 = name1
+            pos, vel = thread_head.vicon.get_state(name1 + '/' + name2)
             return np.hstack([pos, vel])
-        self.vicon_solo = get_vicon('solo8')
-        self.vicon_leg_fr = get_vicon('solo8_fr')
-        self.vicon_leg_hl = get_vicon('solo8_hl')
-        self.vicon_leg_hr = get_vicon('solo8_hr')
 
-        if self.with_sliders:
-            self.des_position = self.slider_scale * (
-                self.map_sliders(self.slider_positions) - self.slider_zero_pos) + self.zero_pos
-        else:
-            self.des_position = self.zero_pos
+        self.vicon_solo = get_vicon('solo8v2')
+        self.vicon_leg_fr = get_vicon('solo8_fr', 'hopper_foot')
+        self.vicon_leg_hl = get_vicon('solo8_hl', 'hopper_foot')
+        self.vicon_leg_hr = get_vicon('solo8_hr', 'hopper_foot')
+
+        # if self.with_sliders:
+        #     self.des_position = self.slider_scale * (
+        #         self.map_sliders(self.slider_positions) - self.slider_zero_pos
+        #         ) + self.zero_pos
+        # else:
+        #     self.des_position = self.zero_pos
+
+        self.des_position = self.slider_scale * (
+                self.map_sliders(0.4 * np.ones_like(self.slider_positions)) - self.slider_zero_pos
+                ) + self.zero_pos
 
         self.tau = self.Kp * (self.des_position - self.joint_positions) - self.Kd * self.joint_velocities
         thread_head.head.set_control('ctrl_joint_torques', self.tau)
@@ -84,10 +94,10 @@ if __name__ == "__main__":
         head,
         [
             ('vicon', Vicon('172.24.117.119:801', [
-                'solo8/solo8',
-                'solo8_fr/solo8_fr',
-                'solo8_hl/solo8_hl',
-                'solo8_hr/solo8_hr'
+                'solo8v2/solo8v2',
+                'solo8_fr/hopper_foot',
+                'solo8_hl/hopper_foot',
+                'solo8_hr/hopper_foot'
             ]))
         ]
     )
@@ -98,3 +108,7 @@ if __name__ == "__main__":
     time.sleep(0.1)
 
     thread_head.switch_controllers(foot_slider_controller)
+    thread_head.start_logging()
+
+    time.sleep(5)
+    thread_head.stop_logging() 
