@@ -21,8 +21,6 @@ class FootSliderController:
         if with_sliders:
             self.slider_positions = head.get_sensor('slider_positions')
 
-        self.t = time.time()
-
     def warmup(self, thread_head):
         self.zero_pos = self.joint_positions.copy()
 
@@ -63,16 +61,14 @@ class FootSliderController:
         self.vicon_leg_hl = get_vicon('solo8_hl', 'hopper_foot')
         self.vicon_leg_hr = get_vicon('solo8_hr', 'hopper_foot')
 
-        # if self.with_sliders:
-        #     self.des_position = self.slider_scale * (
-        #         self.map_sliders(self.slider_positions) - self.slider_zero_pos
-        #         ) + self.zero_pos
-        # else:
-        #     self.des_position = self.zero_pos
+        if self.with_sliders:
+            self.des_position = self.slider_scale * (
+                self.map_sliders(self.slider_positions) - self.slider_zero_pos
+                ) + self.zero_pos 
+        else:
+            self.des_position = self.zero_pos
 
-        self.des_position = self.slider_scale * (
-                self.map_sliders(0.4 * np.ones_like(self.slider_positions)) - self.slider_zero_pos
-                ) + self.zero_pos
+        ## todo; hit ground to measure latency
 
         self.tau = self.Kp * (self.des_position - self.joint_positions) - self.Kd * self.joint_velocities
         thread_head.head.set_control('ctrl_joint_torques', self.tau)
@@ -110,5 +106,5 @@ if __name__ == "__main__":
     thread_head.switch_controllers(foot_slider_controller)
     thread_head.start_logging()
 
-    time.sleep(5)
-    thread_head.stop_logging() 
+    time.sleep(3)
+    thread_head.stop_logging()
