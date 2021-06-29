@@ -71,6 +71,9 @@ class FootSliderController:
         ## todo; hit ground to measure latency
 
         self.tau = self.Kp * (self.des_position - self.joint_positions) - self.Kd * self.joint_velocities
+
+        self.tau[:6] = np.zeros(6)
+
         thread_head.head.set_control('ctrl_joint_torques', self.tau)
 
 
@@ -106,5 +109,5 @@ if __name__ == "__main__":
     thread_head.switch_controllers(foot_slider_controller)
     thread_head.start_logging()
 
-    time.sleep(5)
+    time.sleep(3)
     thread_head.stop_logging()
