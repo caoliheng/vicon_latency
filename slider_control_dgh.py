@@ -106,5 +106,5 @@ if __name__ == "__main__":
     thread_head.switch_controllers(foot_slider_controller)
     thread_head.start_logging()
 
-    time.sleep(3)
+    time.sleep(5)
     thread_head.stop_logging()
