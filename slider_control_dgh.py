@@ -72,7 +72,8 @@ class FootSliderController:
 
         self.tau = self.Kp * (self.des_position - self.joint_positions) - self.Kd * self.joint_velocities
 
-        self.tau[:6] = np.zeros(6)
+        self.tau[:4] = np.zeros(4)
+        self.tau[6:] = np.zeros(2)
 
         thread_head.head.set_control('ctrl_joint_torques', self.tau)
 
