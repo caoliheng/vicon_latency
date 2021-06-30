@@ -1,5 +1,6 @@
 import time
 import numpy as np
+from numpy.core.function_base import linspace
 
 import dynamic_graph_manager_cpp_bindings
 from robot_properties_solo.solo8wrapper import Solo8Config
@@ -20,6 +21,12 @@ class FootSliderController:
 
         if with_sliders:
             self.slider_positions = head.get_sensor('slider_positions')
+
+
+        # linspace code
+        # self.L = None
+        # self.i_L = 0
+        # self.go = 0
 
     def warmup(self, thread_head):
         self.zero_pos = self.joint_positions.copy()
@@ -68,7 +75,23 @@ class FootSliderController:
         else:
             self.des_position = self.zero_pos
 
-        ## todo; hit ground to measure latency
+        # linspace
+        # if self.go == 0:
+        #     self.go = 1
+        #     target = self.joint_positions.copy()
+        #     target[5] += 0.5
+        #     self.L = np.linspace(self.joint_positions, target, num=200)
+        # elif self.go == 1 and self.i_L >= self.L.shape[0]:
+        #     self.go = 2
+        #     self.i_L = 0
+        #     target = self.joint_positions.copy()
+        #     target[5] -= 0.5
+        #     self.L = np.linspace(self.joint_positions, target, num=200)
+        # elif self.go == 2 and self.i_L >= self.L.shape[0]:
+        #     self.L[self.L.shape[0]]  # switch to safety controller
+        
+        # self.des_position = self.L[self.i_L]
+        # self.i_L += 1
 
         self.tau = self.Kp * (self.des_position - self.joint_positions) - self.Kd * self.joint_velocities
 
@@ -108,7 +131,7 @@ if __name__ == "__main__":
     time.sleep(0.1)
 
     thread_head.switch_controllers(foot_slider_controller)
+    
     thread_head.start_logging()
-
-    time.sleep(3)
+    time.sleep(5)
     thread_head.stop_logging()
