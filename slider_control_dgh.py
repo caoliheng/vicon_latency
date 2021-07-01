@@ -27,7 +27,7 @@ class FootSliderController:
         self.L = None
         self.i_L = 0
         self.go = 0
-        self.num = 600
+        self.num = 700
 
     def warmup(self, thread_head):
         self.zero_pos = self.joint_positions.copy()
@@ -64,10 +64,10 @@ class FootSliderController:
             pos, vel = thread_head.vicon.get_state(name1 + '/' + name2)
             return np.hstack([pos, vel])
 
-        # self.vicon_solo = get_vicon('solo8v2')
-        # self.vicon_leg_fr = get_vicon('solo8_fr', 'hopper_foot')
-        # self.vicon_leg_hl = get_vicon('solo8_hl', 'hopper_foot')
-        # self.vicon_leg_hr = get_vicon('solo8_hr', 'hopper_foot')
+        self.vicon_solo = get_vicon('solo8v2')
+        self.vicon_leg_fr = get_vicon('solo8_fr', 'hopper_foot')
+        self.vicon_leg_hl = get_vicon('solo8_hl', 'hopper_foot')
+        self.vicon_leg_hr = get_vicon('solo8_hr', 'hopper_foot')
 
         # if self.with_sliders:
         #     self.des_position = self.slider_scale * (
