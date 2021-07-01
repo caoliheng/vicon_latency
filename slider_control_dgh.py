@@ -24,9 +24,10 @@ class FootSliderController:
 
 
         # linspace code
-        # self.L = None
-        # self.i_L = 0
-        # self.go = 0
+        self.L = None
+        self.i_L = 0
+        self.go = 0
+        self.num = 600
 
     def warmup(self, thread_head):
         self.zero_pos = self.joint_positions.copy()
@@ -63,35 +64,36 @@ class FootSliderController:
             pos, vel = thread_head.vicon.get_state(name1 + '/' + name2)
             return np.hstack([pos, vel])
 
-        self.vicon_solo = get_vicon('solo8v2')
-        self.vicon_leg_fr = get_vicon('solo8_fr', 'hopper_foot')
-        self.vicon_leg_hl = get_vicon('solo8_hl', 'hopper_foot')
-        self.vicon_leg_hr = get_vicon('solo8_hr', 'hopper_foot')
+        # self.vicon_solo = get_vicon('solo8v2')
+        # self.vicon_leg_fr = get_vicon('solo8_fr', 'hopper_foot')
+        # self.vicon_leg_hl = get_vicon('solo8_hl', 'hopper_foot')
+        # self.vicon_leg_hr = get_vicon('solo8_hr', 'hopper_foot')
 
-        if self.with_sliders:
-            self.des_position = self.slider_scale * (
-                self.map_sliders(self.slider_positions) - self.slider_zero_pos
-                ) + self.zero_pos 
-        else:
-            self.des_position = self.zero_pos
+        # if self.with_sliders:
+        #     self.des_position = self.slider_scale * (
+        #         self.map_sliders(self.slider_positions) - self.slider_zero_pos
+        #         ) + self.zero_pos 
+        # else:
+        #     self.des_position = self.zero_pos
 
         # linspace
-        # if self.go == 0:
-        #     self.go = 1
-        #     target = self.joint_positions.copy()
-        #     target[5] += 0.5
-        #     self.L = np.linspace(self.joint_positions, target, num=200)
-        # elif self.go == 1 and self.i_L >= self.L.shape[0]:
-        #     self.go = 2
-        #     self.i_L = 0
-        #     target = self.joint_positions.copy()
-        #     target[5] -= 0.5
-        #     self.L = np.linspace(self.joint_positions, target, num=200)
-        # elif self.go == 2 and self.i_L >= self.L.shape[0]:
-        #     self.L[self.L.shape[0]]  # switch to safety controller
         
-        # self.des_position = self.L[self.i_L]
-        # self.i_L += 1
+        if self.go == 0:
+            self.go = 1
+            target = self.joint_positions.copy()
+            target[5] += 0.5
+            self.L = np.linspace(self.joint_positions, target, num=self.num)
+        elif self.go == 1 and self.i_L >= self.L.shape[0]:
+            self.go = 2
+            self.i_L = 0
+            target = self.joint_positions.copy()
+            target[5] -= 0.5
+            self.L = np.linspace(self.joint_positions, target, num=self.num)
+        elif self.go == 2 and self.i_L >= self.L.shape[0]:
+            self.L[self.L.shape[0]]  # switch to safety controller
+        
+        self.des_position = self.L[self.i_L]
+        self.i_L += 1
 
         self.tau = self.Kp * (self.des_position - self.joint_positions) - self.Kd * self.joint_velocities
 
